@@ -1,7 +1,7 @@
 
 # my ignored files
-
-sql/databaseCreate.sql
+environment.js
+sql/db_init.sql
 package-lock.json
 
 # Dependency directories
