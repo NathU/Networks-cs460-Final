@@ -1,6 +1,6 @@
 
 # my ignored files
-environment.js
+
 sql/databaseCreate.sql
 package-lock.json
 

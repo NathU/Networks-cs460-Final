@@ -1,7 +1,9 @@
+-- what's your MySQL username and password? Fill out in the <>'s below...
 CREATE DATABASE IF NOT EXISTS game460;
 USE game460;
-GRANT EXECUTE ON game460.* TO 'root'@'localhost' IDENTIFIED BY '';
+GRANT EXECUTE ON game460.* TO '<username>'@'localhost' IDENTIFIED BY '<password>';
 
+-- There's just one table in our DB for this silly little game.
 DROP TABLE IF EXISTS game_state;
 CREATE TABLE IF NOT EXISTS game_state(
 	id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
