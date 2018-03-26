@@ -1,0 +1,17 @@
+{
+  "name": "460_game",
+  "version": "0.0.0",
+  "description": "",
+  "main": "game_server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "NathU",
+  "license": "ISC",
+  "dependencies": {
+    "express": "4.16.2",
+    "body-parser": "1.18.2",
+    "mysql": "2.15.0",
+	 "winston": "2.4.0"
+  }
+}
