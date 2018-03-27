@@ -4,7 +4,7 @@ var vars = {
 	'url' : "https://www.joyfulnetworking.com/",//"http://localhost:3001/",//"http://10.200.34.231:3001/";//
 	'game_width' : 1200,
 	'game_height' : 540,
-	'refresh_interval' : (1000 / 50 /* <- FPS */)
+	'refresh_interval' :20 // (1000 / 50 /* <- FPS */)
 };
 
 
@@ -48,7 +48,7 @@ function send_request(req_type, endpoint, data) {
 					players_array.push(new component(player.name, 30, 30, "red", resp_data.x_pos, resp_data.y_pos));
 					players[resp_data.name] = players_array.length - 1;
 					
-					// console.log("players{} = "+JSON.stringify(players));
+					console.log("players{} = "+JSON.stringify(players));
 					// console.log("players_array[] = "+JSON.stringify(players_array));
 					console.log(player.name + "("+player.id+") has joined the game!");
 					startGame();
@@ -56,10 +56,12 @@ function send_request(req_type, endpoint, data) {
 			}
 			
 			else if (endpoint === "move" && resp_status === "success"){
-				// console.log("Your new position is ("+String(response.data.x)+", "+String(response.data.y)+")!");
+				//console.log("Your new position is ("+String(response.data.x)+", "+String(response.data.y)+")!");
+				console.log("Moved");
 			}
 			
 			else if (endpoint === "getGameState" && resp_status === "success"){
+				console.log("Got Game State");
 				resp_data = response.data;
 				for (i = 0; i < resp_data.length; i += 1) {
 					if (players[resp_data[i].name] === undefined) {
@@ -225,15 +227,12 @@ function updateGameArea() {
 			'y' : players_array[players[player.name]].y + players_array[players[player.name]].speedY
 		};
 		send_request("POST", "move", data);
+		send_request("GET", "getGameState", null);
 	 } 
 	 
     myGameArea.clear();
     myGameArea.frameNo += 1;
 	 
-	 // at 50 fps, this is 5 times per second. Not bad right?
-	 if (myGameArea.frameNo % 10 == 0) {
-		 send_request("GET", "getGameState", null);
-	 } 
 	 myName.text=player.name + "("+player.id+")";
 	 if ( !(players[player.name] === undefined) ) {
 		 myPosition.text="("+String(players_array[players[player.name]].x)+", "
