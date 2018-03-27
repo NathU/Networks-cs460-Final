@@ -1,7 +1,7 @@
 var vars = {
 	'bounce' : 1.03,
 	'friction' : 0.9,
-	'url' : "http://localhost:3001/",//"http://10.200.34.231:3001/";//
+	'url' : "https://www.joyfulnetworking.com/",//"http://localhost:3001/",//"http://10.200.34.231:3001/";//
 	'game_width' : 1200,
 	'game_height' : 540,
 	'refresh_interval' : (1000 / 50 /* <- FPS */)
