@@ -1,7 +1,7 @@
 var vars = {
 	'bounce' : -1.03,
 	'friction' : 0.9,
-	'url' : "https://www.joyfulnetworking.com/",//"http://10.35.162.176:3001/",//"http://localhost:3001/",//
+	'url' : "http://localhost:3001/",//"https://www.joyfulnetworking.com/",//"http://10.35.162.176:3001/",//
 	'game_width' : 1200,
 	'game_height' : 540,
 	'refresh_interval' :20 // (1000 / 50 /* <- FPS */)
@@ -155,10 +155,18 @@ function component(name, width, height, color, x, y, type) {
         }
     }
 	 this.next_x = function(){
-		 return Math.floor(this.x + this.speedX);
+		 temp = Math.floor(this.x + this.speedX) % vars.game_width;
+		 if (temp < 0)
+			 temp += vars.game_width;
+		 return temp;
+		 // return Math.abs(Math.floor(this.x + this.speedX)) % vars.game_width;
 	 }
 	 this.next_y = function(){
-		 return Math.floor(this.y + this.speedY);
+		 temp = Math.floor(this.y + this.speedY) % vars.game_height;
+		 if (temp < 0)
+			 temp += vars.game_height;
+		 return temp;
+		 //return Math.abs(Math.floor(this.y + this.speedY)) % vars.game_height;
 	 }
     this.newPos = function(x, y) {
 		  this.x = x;
@@ -180,19 +188,19 @@ function component(name, width, height, color, x, y, type) {
 		  var bottom = myGameArea.canvas.height - this.height;
 		  
         if (mybottom >= bottom){
-            this.speedY =  Math.abs(this.speedY) * -1 * vars.bounce;
+            // this.speedY =  Math.abs(this.speedY) * -1 * vars.bounce;
 			   hit = true;
 		  }
         else if (mytop <= top ){
-			   this.speedY = Math.abs(this.speedY) * vars.bounce;
+			   // this.speedY = Math.abs(this.speedY) * vars.bounce;
 			   hit = true;
 		  }
 		  if (myright >= right_side){
-			   this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
+			   // this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
 			   hit = true;
 		  }
 		  else if (myleft <= left_side ){
-            this.speedX = Math.abs(this.speedX) * vars.bounce;
+            // this.speedX = Math.abs(this.speedX) * vars.bounce;
 			   hit = true;
 		  }
 		  return hit;
@@ -218,8 +226,8 @@ function component(name, width, height, color, x, y, type) {
 			  // crash = false;
 		  
 		  else {
-				this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
-				this.speedY = Math.abs(this.speedY) * -1 * vars.bounce;
+				// this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
+				// this.speedY = Math.abs(this.speedY) * -1 * vars.bounce;
 				console.log("collision!");
 		  }
         return crash;
@@ -227,10 +235,11 @@ function component(name, width, height, color, x, y, type) {
 }
 
 function updateGameArea() {
-	 // Check if you hit the side.
+	 /*// Check if you hit the side.
 	 if (players_array[players[player.name]].hitSide()) {
 		 console.log("bumped the wall."); // TODO: 
 	 }
+	 */
 	 // loop thru other players in game to determine collisions
 	 for (i = 0; i < players_array.length; i += 1) {
 		  if ( !(i === player.index) &&
