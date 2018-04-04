@@ -58,6 +58,14 @@ app.post('/move', jsonParser, function (req, res) {
 		});
 });
 
+// app.post('/collision', jsonParser, function (req, res) {
+	// logger.info("hit \'collision\'");
+	// requestBodyHandler(contracts.collision, req, res, 
+		// function (req, res) {
+			// endpoints.collision( req.body, (response) => res.send(response))
+		// });
+// });
+
 app.get('/getGameState', jsonParser, function (req, res) {
 	// logger.info("hit \'getGameState\'");
 	requestBodyHandler(contracts.getGameState, req, res, 
@@ -73,7 +81,13 @@ app.get('/clearGameState', jsonParser, function (req, res) {
 			endpoints.clearGameState( (response) => res.send(response))
 		});
 });
-
+app.post('/giveFlag', jsonParser, function (req, res) {
+	logger.info("hit \'giveFlag\'");
+	requestBodyHandler(contracts.giveFlag, req, res, 
+		function (req, res) {
+			endpoints.giveFlag( req.body, (response) => res.send(response))
+		});
+});
 
 
 

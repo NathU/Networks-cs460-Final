@@ -10,9 +10,9 @@ select '...procedure definitions...' AS '';
 select '...procedure create - addPlayer' AS '';
 DROP PROCEDURE IF EXISTS addPlayer;
 DELIMITER //
-CREATE PROCEDURE addPlayer(IN player_name VARCHAR(16))
+CREATE PROCEDURE addPlayer(IN player_name VARCHAR(128), x_new INT, y_new INT)
 BEGIN
-   INSERT INTO game_state(name) VALUES(player_name);
+   INSERT INTO game_state(name, x_pos, y_pos) VALUES(player_name, x_new, y_new);
 	SELECT * FROM game_state WHERE game_state.name = player_name;
 END //
 DELIMITER ;
@@ -21,11 +21,16 @@ DELIMITER ;
 -- select '...procedure create - deletePlayer' AS '';
 -- DROP PROCEDURE IF EXISTS deletePlayer;
 -- DELIMITER //
--- CREATE PROCEDURE deletePlayer(IN u_id INT UNSIGNED)
+-- CREATE PROCEDURE deletePlayer(IN player_name VARCHAR(128))
 -- BEGIN
-	-- TODO: Don't delete. Just set a field like 'status' to dead code.
-   -- UPDATE game_state SET other_id = 0 WHERE game_state.other_id = u_id;
-	-- DELETE FROM game_state WHERE game_state.id = u_id;
+	-- -- TODO: Don't delete. Just set a field like 'status' to dead code.
+	
+	-- IF 1 = (SELECT has_flag FROM game_state WHERE player_name = game_state.name)
+	-- THEN -- assign flag to someone else before killing
+		-- UPDATE game_state SET has_flag = 1
+	-- END IF;
+	
+   -- UPDATE game_state SET is_alive = 0 WHERE player_name = game_state.name;
 -- END //
 -- DELIMITER ;
 
@@ -33,10 +38,10 @@ DELIMITER ;
 select '...procedure create - updatePosition' AS '';
 DROP PROCEDURE IF EXISTS updatePosition;
 DELIMITER //
-CREATE PROCEDURE updatePosition(IN u_id INT UNSIGNED, x_new INT UNSIGNED, y_new INT UNSIGNED)
+CREATE PROCEDURE updatePosition(IN player_name VARCHAR(128), x_new INT, y_new INT, score_new INT UNSIGNED)
 BEGIN
 	-- TODO: set last_x/y to current, then update.
-	UPDATE game_state SET x_pos = x_new, y_pos = y_new WHERE game_state.id = u_id;
+	UPDATE game_state SET x_pos = x_new, y_pos = y_new, score = score_new WHERE game_state.name = player_name;
 	-- SELECT name, x_pos, y_pos FROM game_state WHERE game_state.status > 0;
 END //
 DELIMITER ;
@@ -47,7 +52,7 @@ DROP PROCEDURE IF EXISTS getGameState;
 DELIMITER //
 CREATE PROCEDURE getGameState(IN u_id INT UNSIGNED)
 BEGIN
-	SELECT name, x_pos, y_pos FROM game_state WHERE id > 0;
+	SELECT name, x_pos, y_pos, score, has_flag FROM game_state;-- WHERE id > 0;
 END //
 DELIMITER ;
 
@@ -60,6 +65,18 @@ BEGIN
 	DELETE FROM game_state WHERE game_state.id > 0;
 END //
 DELIMITER ;
+
+
+select '...procedure create - giveFlag' AS '';
+DROP PROCEDURE IF EXISTS giveFlag;
+DELIMITER //
+CREATE PROCEDURE giveFlag(IN player_name VARCHAR(128))
+BEGIN
+	UPDATE game_state SET has_flag = 0;
+	UPDATE game_state SET has_flag = 1 WHERE game_state.name = player_name;
+END //
+DELIMITER ;
+
 
 -- select '...procedure create - validateForgotPassToken' AS '';
 -- DROP PROCEDURE IF EXISTS validateForgotPassToken;

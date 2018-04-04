@@ -52,12 +52,30 @@ exports.joinGame = {
 	'name':{
 		'required':true,
 		'type':"string"
+	},
+	'x_start':{
+		'required':true,
+		'type':5
+	},
+	'y_start':{
+		'required':true,
+		'type':5		
+	}
+};
+exports.leaveGame = {
+	'name':{
+		'required':true,
+		'type':"string"
+	},
+	'x':{
+		'required':true,
+		'type':5
 	}
 };
 exports.move = {
-	'id':{
+	'name':{
 		'required':true,
-		'type':5
+		'type':"string"
 	},
 	'x':{
 		'required':true,
@@ -67,14 +85,32 @@ exports.move = {
 		'required':true,
 		'type':5		
 	},
-	'move_type':{
-		'required':false,
-		'type':"string"		
+	'score':{
+		'required':true,
+		'type':5
+	}
+};
+exports.collision = {
+	'my_name':{
+		'required':true,
+		'type':"string"
+	},
+	'opp_name':{
+		'required':true,
+		'type':"string"
 	}
 };
 exports.getGameState = {};
 exports.clearGameState = {};
+exports.giveFlag = {
+	'name':{
+		'required':true,
+		'type':"string"
+	}
+};
+
 
 exports.DB_Access_Error = { 'data':"DB error. This is a problem.", 'status':"failure" };
 exports.No_Players_Error = {'data': "There appear to be ZERO players", 'status': "failure"}
 exports.Move_Failure = {'data': "Failed to update your position in the Game Model", 'status': "failure"}
+exports.GIVEFlag_Failure = {'data': "Failed to  give the flag to that player...", 'status': "failure"}

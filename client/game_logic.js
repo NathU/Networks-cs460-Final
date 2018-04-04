@@ -1,7 +1,7 @@
 var vars = {
-	'bounce' : 1.03,
+	'bounce' : -1.03,
 	'friction' : 0.9,
-	'url' : "https://www.joyfulnetworking.com/",//"http://localhost:3001/",//"http://10.200.34.231:3001/";//
+	'url' : "https://www.joyfulnetworking.com/",//"http://10.35.162.176:3001/",//"http://localhost:3001/",//
 	'game_width' : 1200,
 	'game_height' : 540,
 	'refresh_interval' :20 // (1000 / 50 /* <- FPS */)
@@ -17,13 +17,14 @@ var players_array = [];
 // THIS player's info.
 var player = {
 	'name' : "default",
-	'id' : -1
+	'id' : -1,
+	'has_flag': 0, // put this in the component
+	'index' : 0
 	
 };
 
 
 
-// TODO: implement getGameState somewhere...
 function send_request(req_type, endpoint, data) {
 	var resp_data = {};
 	var resp_status = "";
@@ -38,42 +39,45 @@ function send_request(req_type, endpoint, data) {
 			if (endpoint === "joinGame"){
 				resp_data = response.data[0];
 				if (resp_status === "failure") {
-					console.log("Pick a different name.");
+					console.log("That name is taken. Please pick a different name.");
 					return;
 				}
 				else {
 					player.name = resp_data.name;
 					player.id = resp_data.id;
-					
 					players_array.push(new component(player.name, 30, 30, "red", resp_data.x_pos, resp_data.y_pos));
 					players[resp_data.name] = players_array.length - 1;
-					
-					console.log("players{} = "+JSON.stringify(players));
-					// console.log("players_array[] = "+JSON.stringify(players_array));
+					player.index = players[resp_data.name];
 					console.log(player.name + "("+player.id+") has joined the game!");
 					startGame();
 				}
 			}
 			
 			else if (endpoint === "move" && resp_status === "success"){
-				//console.log("Your new position is ("+String(response.data.x)+", "+String(response.data.y)+")!");
-				console.log("Moved");
+			}
+			else if (endpoint === "giveFlag" && resp_status === "success"){
 			}
 			
 			else if (endpoint === "getGameState" && resp_status === "success"){
-				console.log("Got Game State");
 				resp_data = response.data;
 				for (i = 0; i < resp_data.length; i += 1) {
+					// catch new players
 					if (players[resp_data[i].name] === undefined) {
 						players_array.push(new component(resp_data[i].name, 30, 30, "blue", resp_data[i].x_pos, resp_data[i].y_pos));
 						players[resp_data[i].name] = players_array.length - 1;
 						console.log(resp_data[i].name + "(i="+players[resp_data[i].name]+") has joined the game!");
-						// console.log("players{} = "+JSON.stringify(players));
-						// console.log("players_array[] = "+JSON.stringify(players_array));
 					}
+					// update existing players
 					else {
 						players_array[players[resp_data[i].name]].newPos(resp_data[i].x_pos, resp_data[i].y_pos);
 					}
+					// handle flag handoff.
+					if (resp_data[i].has_flag > 0)
+						players_array[players[resp_data[i].name]].color = "yellow";
+					else if (resp_data[i].name === player.name)
+						players_array[players[resp_data[i].name]].color = "blue";
+					else
+						players_array[players[resp_data[i].name]].color = "red";
 				}
 			}
 			
@@ -91,13 +95,22 @@ function send_request(req_type, endpoint, data) {
 }
 
 function joinGame(player_name) { 
-	send_request("POST", "joinGame", {'name':String(player_name)}); 
+	x = Math.floor(Math.random() * (vars.game_width - 31));
+	y = Math.floor(Math.random() * (vars.game_height - 31));
+	send_request("POST", "joinGame", 
+		{
+			'name':String(player_name),
+			'x_start': x,
+			'y_start': y
+		}); 
 }
 
 function startGame() {
     myName = new component(player.name, "15px", "Consolas", "black", 280, 40, "text");
 	 myPosition = new component("position", "10px", "Consolas", "black", 280, 60, "text");
+	 you = new component("you", "13px", "Consolas", "black", players_array[player.index].x, players_array[player.index].y, "text");
 	 
+	 you.text = "you";
 	 myName.text = player.name+"("+player.id+")";
 	 myPosition.text = "(?, ?)";
     
@@ -120,7 +133,8 @@ var myGameArea = {
 }
 
 function component(name, width, height, color, x, y, type) {
-    this.name = name;
+    this.color = color;
+	 this.name = name;
 	 this.type = type;
     this.score = 0;
     this.width = width;
@@ -136,10 +150,16 @@ function component(name, width, height, color, x, y, type) {
             ctx.fillStyle = color;
             ctx.fillText(this.text, this.x, this.y);
         } else {
-            ctx.fillStyle = color;
+            ctx.fillStyle = this.color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
+	 this.next_x = function(){
+		 return Math.floor(this.x + this.speedX);
+	 }
+	 this.next_y = function(){
+		 return Math.floor(this.y + this.speedY);
+	 }
     this.newPos = function(x, y) {
 		  this.x = x;
 		  this.y = y;
@@ -150,9 +170,9 @@ function component(name, width, height, color, x, y, type) {
 		  var hit = false;
 		  
         var myleft = this.x;
-        var myright = this.x + (this.width);
+        var myright = this.x;// + (this.width);
         var mytop = this.y;
-        var mybottom = this.y + (this.height);
+        var mybottom = this.y// + (this.height);
 		  
 		  var left_side = 0;
 		  var right_side = myGameArea.canvas.width - this.width;
@@ -194,41 +214,52 @@ function component(name, width, height, color, x, y, type) {
 		  if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
             crash = false;
         }
+		  // if (myleft >= )
+			  // crash = false;
+		  
 		  else {
-				this.speedX = Math.abs(this.speedX) * -1 * vars.bounce; // replace "* bounce" with "+ otherobj.speedX"
+				this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
 				this.speedY = Math.abs(this.speedY) * -1 * vars.bounce;
+				console.log("collision!");
 		  }
         return crash;
     }
 }
 
 function updateGameArea() {
-    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
-	 
 	 // Check if you hit the side.
 	 if (players_array[players[player.name]].hitSide()) {
 		 console.log("bumped the wall."); // TODO: 
 	 }
-	 
 	 // loop thru other players in game to determine collisions
-    for (i = 0; i < players_array.length; i += 1) {
-        if ( !(i === players[player.name]) &&
-					players_array[players[player.name]].crashWith(players_array[i]) ) 
+	 for (i = 0; i < players_array.length; i += 1) {
+		  if ( !(i === player.index) &&
+					players_array[player.index].crashWith(players_array[i]) &&
+					players_array[player.index].color == "yellow" ) 
 		  {
-			   console.log("You bumped into "+players_array[i].name);
-        } 
-    }
+				console.log("You bumped into "+players_array[i].name);
+				if (players_array[player.index].color == "yellow") // only call if you have the flag
+					send_request("POST", "giveFlag", {'name':players_array[i].name});
+		  } 
+	 }
 	 
 	 // Update Moves 10 times per second
 	 if (myGameArea.frameNo % 5 == 0) {
 		var data = {
-			'id': player.id,
-			'x' : players_array[players[player.name]].x + players_array[players[player.name]].speedX,
-			'y' : players_array[players[player.name]].y + players_array[players[player.name]].speedY
+			'name': player.name,
+			'x' : players_array[player.index].next_x(),
+			'y' : players_array[player.index].next_y(),
+			'score' : 0 
 		};
 		send_request("POST", "move", data);
-		send_request("GET", "getGameState", null);
+		// send_request("GET", "getGameState", null);
+	 }
+	 
+	 	 // Get Game State 5 times per second
+	 if (myGameArea.frameNo % 10 == 0) {
+		 send_request("GET", "getGameState", null);
 	 } 
+	 
 	 
     myGameArea.clear();
     myGameArea.frameNo += 1;
@@ -237,8 +268,11 @@ function updateGameArea() {
 	 if ( !(players[player.name] === undefined) ) {
 		 myPosition.text="("+String(players_array[players[player.name]].x)+", "
 								  +String(players_array[players[player.name]].y)+")";
+		 you.x = players_array[player.index].x;
+		 you.y = players_array[player.index].y;
 	 }
 	 
+	 you.update();
 	 myName.update();
 	 myPosition.update();	 
 	 for (i = 0; i < players_array.length; i += 1) {

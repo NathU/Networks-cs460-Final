@@ -1,1 +1,16 @@
 A simple multiplayer game over HTTPS
+
+Preso Thoughts:
+- Emphasis on the Application Layer 
+  - How EXPRESS.JS handles HTTP
+  - Logging & Notification/Alerts?
+  - PM2 automated process management?
+- How NodeJS interacts with Network Layer
+- Show the lifetime of a player's TCP connection (in the console log?)
+- Discuss SSL Certs thru CertBot & LetsEncrypt (how it works?)
+- The lifetime of a multiplayer game... easiest.
+- Talk about security! (You'd have to do security for the game)
+  - use of encryption in JWT's
+  - use of Diffie-Helman group
+  - DB encryption???
+  - SSL Cert & rating

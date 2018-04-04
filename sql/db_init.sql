@@ -1,20 +1,17 @@
--- what's your MySQL username and password? Fill out in the <>'s below...
 CREATE DATABASE IF NOT EXISTS game460;
 USE game460;
-GRANT EXECUTE ON game460.* TO '<username>'@'localhost' IDENTIFIED BY '<password>';
+GRANT EXECUTE ON game460.* TO 'root'@'localhost' IDENTIFIED BY '';
 
--- There's just one table in our DB for this silly little game.
+-- table for Capture the Flag
 DROP TABLE IF EXISTS game_state;
 CREATE TABLE IF NOT EXISTS game_state(
 	id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-	name VARCHAR(32) DEFAULT "Phil", 
-	status INT UNSIGNED DEFAULT 1,
-	x_pos INT UNSIGNED DEFAULT 1,
-	y_pos INT UNSIGNED DEFAULT 1,
-	last_x INT UNSIGNED DEFAULT 0,
-	last_y INT UNSIGNED DEFAULT 0,
-	action INT UNSIGNED DEFAULT 0,
-	other_id INT UNSIGNED DEFAULT 0,
+	name VARCHAR(128) NOT NULL, 
+	x_pos INT NOT NULL,
+	y_pos INT NOT NULL,
+	score INT UNSIGNED NOT NULL DEFAULT 0,
+	has_flag INT UNSIGNED NOT NULL DEFAULT 0,
+	is_alive INT UNSIGNED NOT NULL DEFAULT 1,
 	CONSTRAINT unique_id UNIQUE(id),
 	CONSTRAINT unique_name UNIQUE(name)
 );

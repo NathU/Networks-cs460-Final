@@ -3,6 +3,27 @@ var contracts = require('./contracts');
 var logger = require('winston');
 
 
+exports.giveFlag = function( req_body, callback){
+	db.query("CALL giveFlag(?)", 
+		[req_body.name],
+		function(err, qr){
+			if(err) {
+				logger.error("giveFlag: giveFlag(sql): ", err);
+				callback(contracts.DB_Access_Error);
+			}
+			else {
+				if (qr.affectedRows < 1) {
+					logger.warn("giveFlag: Failure! could not give the flag to %s!", req_body.name);
+					callback(contracts.GIVEFlag_Failure);
+				}
+				else {
+					logger.info("giveFlag: gave flag to %s.", req_body.name);
+					callback( {'data': req_body.name+" got the flag!", 'status': "success"} );
+				}
+			}
+	});
+}
+
 
 exports.clearGameState = function( callback){
 	db.query("CALL clearGameState(?)", 
@@ -49,8 +70,8 @@ exports.getGameState = function( callback){
 
 
 exports.move = function( req_body, callback){
-	db.query("CALL updatePosition(?,?,?)", 
-		[req_body.id, req_body.x, req_body.y],
+	db.query("CALL updatePosition(?,?,?,?)", 
+		[req_body.name, req_body.x, req_body.y, req_body.score],
 		function(err, qr){
 			if(err) {
 				logger.error("move: updatePosition(sql): ", err);
@@ -58,7 +79,7 @@ exports.move = function( req_body, callback){
 			}
 			else {
 				if (qr.affectedRows < 1) {
-					logger.warn("move: could not update position for user %d", req_body.id);
+					logger.warn("move: could not update position for user %s", req_body.name);
 					callback(contracts.Move_Failure);
 				}
 				else {
@@ -70,9 +91,31 @@ exports.move = function( req_body, callback){
 }
 
 
+// exports.collision = function( req_body, callback){
+	// db.query("CALL updatePosition(?,?,?,?)", 
+		// [req_body.name, req_body.x, req_body.y, req_body.score],
+		// function(err, qr){
+			// if(err) {
+				// logger.error("collision: updatePosition(sql): ", err);
+				// callback(contracts.DB_Access_Error);
+			// }
+			// else {
+				// if (qr.affectedRows < 1) {
+					// logger.warn("collision: could not update position for user %s", req_body.name);
+					// callback(contracts.Move_Failure);
+				// }
+				// else {
+					// logger.info("collision: success.");
+					// callback( {'data': {'x':req_body.x, 'y':req_body.y }, 'status': "success"} );
+				// }
+			// }
+	// });
+// }
+
+
 exports.joinGame = function(req_body, callback){
-	db.query("CALL addPlayer(?)", 
-		[req_body.name], 
+	db.query("CALL addPlayer(?,?,?)", 
+		[req_body.name, req_body.x_start, req_body.y_start], 
 		function(err, qr){
 			if(err) {
 				logger.error("joinGame: addPlayer(sql): ", err);
