@@ -9,7 +9,7 @@ var vars = {
 
 
 var xhr;
-var myName;
+var myScore;
 var myPosition;
 
 var players = {}; // maps "name" : index# in 'players_array'
@@ -69,15 +69,24 @@ function send_request(req_type, endpoint, data) {
 					}
 					// update existing players
 					else {
+						// update position
 						players_array[players[resp_data[i].name]].newPos(resp_data[i].x_pos, resp_data[i].y_pos);
+						// update score
+						players_array[players[resp_data[i].name]].score = resp_data[i].score;
 					}
 					// handle flag handoff.
-					if (resp_data[i].has_flag > 0)
+					if (resp_data[i].has_flag > 0){
 						players_array[players[resp_data[i].name]].color = "yellow";
-					else if (resp_data[i].name === player.name)
-						players_array[players[resp_data[i].name]].color = "blue";
-					else
+						players_array[players[resp_data[i].name]].has_flag = true;
+					}
+					else if (resp_data[i].name === player.name){
+						players_array[player.index].color = "blue";
+						players_array[player.index].has_flag = false;
+					}
+					else{
 						players_array[players[resp_data[i].name]].color = "red";
+						players_array[players[resp_data[i].name]].has_flag = false;
+					}
 				}
 			}
 			
@@ -106,12 +115,12 @@ function joinGame(player_name) {
 }
 
 function startGame() {
-    myName = new component(player.name, "15px", "Consolas", "black", 280, 40, "text");
-	 myPosition = new component("position", "10px", "Consolas", "black", 280, 60, "text");
+    myScore = new component("score", "15px", "Consolas", "black", 20, 20, "text");
+	 myPosition = new component("position", "10px", "Consolas", "black", 20, 40, "text");
 	 you = new component("you", "13px", "Consolas", "black", players_array[player.index].x, players_array[player.index].y, "text");
 	 
 	 you.text = "you";
-	 myName.text = player.name+"("+player.id+")";
+	 myScore.text = "Score: ";
 	 myPosition.text = "(?, ?)";
     
 	 myGameArea.start();
@@ -137,6 +146,7 @@ function component(name, width, height, color, x, y, type) {
 	 this.name = name;
 	 this.type = type;
     this.score = 0;
+	 this.has_flag = false;
     this.width = width;
     this.height = height;
     this.speedX = 0;
@@ -187,6 +197,8 @@ function component(name, width, height, color, x, y, type) {
 		  var top = 0;
 		  var bottom = myGameArea.canvas.height - this.height;
 		  
+		  return (mybottom >= bottom || mytop <= top || myright >= right_side || myleft <= left_side);
+		  /*
         if (mybottom >= bottom){
             // this.speedY =  Math.abs(this.speedY) * -1 * vars.bounce;
 			   hit = true;
@@ -204,6 +216,7 @@ function component(name, width, height, color, x, y, type) {
 			   hit = true;
 		  }
 		  return hit;
+		  */
 
     }
     this.crashWith = function(otherobj) {
@@ -240,11 +253,12 @@ function updateGameArea() {
 		 console.log("bumped the wall."); // TODO: 
 	 }
 	 */
+	 
 	 // loop thru other players in game to determine collisions
 	 for (i = 0; i < players_array.length; i += 1) {
 		  if ( !(i === player.index) &&
 					players_array[player.index].crashWith(players_array[i]) &&
-					players_array[player.index].color == "yellow" ) 
+					players_array[player.index].has_flag ) 
 		  {
 				console.log("You bumped into "+players_array[i].name);
 				if (players_array[player.index].color == "yellow") // only call if you have the flag
@@ -258,7 +272,7 @@ function updateGameArea() {
 			'name': player.name,
 			'x' : players_array[player.index].next_x(),
 			'y' : players_array[player.index].next_y(),
-			'score' : 0 
+			'score' : players_array[player.index].score 
 		};
 		send_request("POST", "move", data);
 		// send_request("GET", "getGameState", null);
@@ -273,16 +287,19 @@ function updateGameArea() {
     myGameArea.clear();
     myGameArea.frameNo += 1;
 	 
-	 myName.text=player.name + "("+player.id+")";
 	 if ( !(players[player.name] === undefined) ) {
 		 myPosition.text="("+String(players_array[players[player.name]].x)+", "
 								  +String(players_array[players[player.name]].y)+")";
 		 you.x = players_array[player.index].x;
 		 you.y = players_array[player.index].y;
+		 if (players_array[player.index].has_flag)
+			 players_array[player.index].score += 1;
+		 myScore.text="Score: "+ String(players_array[player.index].score);
+		 
 	 }
 	 
 	 you.update();
-	 myName.update();
+	 myScore.update();
 	 myPosition.update();	 
 	 for (i = 0; i < players_array.length; i += 1) {
 		 players_array[i].update();
