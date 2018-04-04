@@ -1,11 +1,4 @@
-
-# my ignored files
 environment.js
 sql/db_init.sql
-package-lock.json
-
-# Dependency directories
+package*
 node_modules/
-
-# Optional npm cache directory
-.npm
