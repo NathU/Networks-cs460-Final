@@ -4,14 +4,12 @@ var vars = {
 	'url' : "http://localhost:3001/",//"https://www.joyfulnetworking.com/",//"http://10.35.162.176:3001/",//
 	'game_width' : 1200,
 	'game_height' : 540,
-	'refresh_interval' :20 // (1000 / 50 /* <- FPS */)
+	'refresh_interval' : 20 // (1000 / 50 /* <- FPS */)
 };
-
 
 var xhr;
 var myScore;
 var myPosition;
-
 var players = {}; // maps "name" : index# in 'players_array'
 var players_array = [];
 // THIS player's info.
@@ -20,22 +18,19 @@ var player = {
 	'id' : -1,
 	'has_flag': 0, // put this in the component
 	'index' : 0
-	
 };
-
-
 
 function send_request(req_type, endpoint, data) {
 	var resp_data = {};
 	var resp_status = "";
 	xhr = new XMLHttpRequest();
-	xhr.open(req_type/* POST or GET */, vars.url+endpoint, true);
+	xhr.open(req_type/* POST or GET */, vars.url + endpoint, true);
 	xhr.setRequestHeader("Content-type", "application/json");
 	xhr.onreadystatechange = function () {
 		if (xhr.readyState === 4 && xhr.status === 200) {
 			var response = JSON.parse(xhr.responseText);
 			resp_status = response.status;
-			
+			// Player joins the game.
 			if (endpoint === "joinGame"){
 				resp_data = response.data[0];
 				if (resp_status === "failure") {
@@ -52,12 +47,13 @@ function send_request(req_type, endpoint, data) {
 					startGame();
 				}
 			}
-			
+			// Player moves.
 			else if (endpoint === "move" && resp_status === "success"){
 			}
+			// Player loses the flag.
 			else if (endpoint === "giveFlag" && resp_status === "success"){
 			}
-			
+			// Player refreshes the game state.
 			else if (endpoint === "getGameState" && resp_status === "success"){
 				resp_data = response.data;
 				for (i = 0; i < resp_data.length; i += 1) {
@@ -89,7 +85,7 @@ function send_request(req_type, endpoint, data) {
 					}
 				}
 			}
-			
+			// Failure.
 			else
 				console.log("SEND_REQ: " + endpoint + "  " + JSON.stringify(data) + "FAILED.");
 		}
@@ -111,163 +107,163 @@ function joinGame(player_name) {
 			'name':String(player_name),
 			'x_start': x,
 			'y_start': y
-		}); 
+		}
+	); 
 }
 
 function startGame() {
-    myScore = new component("score", "15px", "Consolas", "black", 20, 20, "text");
-	 myPosition = new component("position", "10px", "Consolas", "black", 20, 40, "text");
-	 you = new component("you", "13px", "Consolas", "black", players_array[player.index].x, players_array[player.index].y, "text");
-	 
-	 you.text = "you";
-	 myScore.text = "Score: ";
-	 myPosition.text = "(?, ?)";
-    
-	 myGameArea.start();
+	myScore = new component("score", "15px", "Consolas", "black", 20, 20, "text");
+	myPosition = new component("position", "10px", "Consolas", "black", 20, 40, "text");
+	you = new component("you", "13px", "Consolas", "black", players_array[player.index].x, players_array[player.index].y, "text");
+
+	you.text = "you";
+	myScore.text = "Score: ";
+	myPosition.text = "(?, ?)";
+
+	myGameArea.start();
 }
 
 var myGameArea = {
-    canvas : document.createElement("canvas"),
-    start : function() {
-        this.canvas.width = vars.game_width;
-        this.canvas.height = vars.game_height;
-        this.context = this.canvas.getContext("2d");
-        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
-        this.frameNo = 0;
-        this.interval = setInterval(updateGameArea, vars.refresh_interval);
-    },
-    clear : function() {
-        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
+	canvas : document.createElement("canvas"),
+	start : function() {
+		this.canvas.width = vars.game_width;
+		this.canvas.height = vars.game_height;
+		this.context = this.canvas.getContext("2d");
+		document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+		this.frameNo = 0;
+		this.interval = setInterval(updateGameArea, vars.refresh_interval);
+	},
+	clear : function() {
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	}
 }
 
 function component(name, width, height, color, x, y, type) {
-    this.color = color;
-	 this.name = name;
-	 this.type = type;
-    this.score = 0;
-	 this.has_flag = false;
-    this.width = width;
-    this.height = height;
-    this.speedX = 0;
-    this.speedY = 0;    
-    this.x = x;
-    this.y = y;
-    this.update = function() {
-        ctx = myGameArea.context;
-        if (this.type == "text") {
-            ctx.font = this.width + " " + this.height;
-            ctx.fillStyle = color;
-            ctx.fillText(this.text, this.x, this.y);
-        } else {
-            ctx.fillStyle = this.color;
-            ctx.fillRect(this.x, this.y, this.width, this.height);
-        }
-    }
-	 this.next_x = function(){
-		 temp = Math.floor(this.x + this.speedX) % vars.game_width;
-		 if (temp < 0)
-			 temp += vars.game_width;
-		 return temp;
-		 // return Math.abs(Math.floor(this.x + this.speedX)) % vars.game_width;
-	 }
-	 this.next_y = function(){
-		 temp = Math.floor(this.y + this.speedY) % vars.game_height;
-		 if (temp < 0)
-			 temp += vars.game_height;
-		 return temp;
-		 //return Math.abs(Math.floor(this.y + this.speedY)) % vars.game_height;
-	 }
-    this.newPos = function(x, y) {
-		  this.x = x;
-		  this.y = y;
-        this.speedX = this.speedX * vars.friction;
-		  this.speedY = this.speedY * vars.friction;
-    }
-    this.hitSide = function() {
-		  var hit = false;
-		  
-        var myleft = this.x;
-        var myright = this.x;// + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y// + (this.height);
-		  
-		  var left_side = 0;
-		  var right_side = myGameArea.canvas.width - this.width;
-		  var top = 0;
-		  var bottom = myGameArea.canvas.height - this.height;
-		  
-		  return (mybottom >= bottom || mytop <= top || myright >= right_side || myleft <= left_side);
-		  /*
-        if (mybottom >= bottom){
-            // this.speedY =  Math.abs(this.speedY) * -1 * vars.bounce;
-			   hit = true;
-		  }
-        else if (mytop <= top ){
-			   // this.speedY = Math.abs(this.speedY) * vars.bounce;
-			   hit = true;
-		  }
-		  if (myright >= right_side){
-			   // this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
-			   hit = true;
-		  }
-		  else if (myleft <= left_side ){
-            // this.speedX = Math.abs(this.speedX) * vars.bounce;
-			   hit = true;
-		  }
-		  return hit;
-		  */
+	this.color = color;
+	this.name = name;
+	this.type = type;
+	this.score = 0;
+	this.has_flag = false;
+	this.width = width;
+	this.height = height;
+	this.speedX = 0;
+	this.speedY = 0;    
+	this.x = x;
+	this.y = y;
+	this.update = function() {
+		ctx = myGameArea.context;
+		if (this.type == "text") {
+			ctx.font = this.width + " " + this.height;
+			ctx.fillStyle = color;
+			ctx.fillText(this.text, this.x, this.y);
+		} else {
+			ctx.fillStyle = this.color;
+			ctx.fillRect(this.x, this.y, this.width, this.height);
+		}
+	}
+	this.next_x = function(){
+		temp = Math.floor(this.x + this.speedX) % vars.game_width;
+		if (temp < 0)
+			temp += vars.game_width;
+		return temp;
+		// return Math.abs(Math.floor(this.x + this.speedX)) % vars.game_width;
+	}
+	this.next_y = function(){
+		temp = Math.floor(this.y + this.speedY) % vars.game_height;
+		if (temp < 0)
+			temp += vars.game_height;
+		return temp;
+		//return Math.abs(Math.floor(this.y + this.speedY)) % vars.game_height;
+	}
+	this.newPos = function(x, y) {
+		this.x = x;
+		this.y = y;
+		this.speedX = this.speedX * vars.friction;
+		this.speedY = this.speedY * vars.friction;
+	}
+	this.hitSide = function() {
+		var hit = false;
+		var myleft = this.x;
+		var myright = this.x;// + (this.width);
+		var mytop = this.y;
+		var mybottom = this.y// + (this.height);
+		var left_side = 0;
+		var right_side = myGameArea.canvas.width - this.width;
+		var top = 0;
+		var bottom = myGameArea.canvas.height - this.height;
 
-    }
-    this.crashWith = function(otherobj) {
-        var crash = true;
-		  
-		  var myleft = this.x;
-        var myright = this.x + (this.width);
-        var mytop = this.y;
-        var mybottom = this.y + (this.height);
-		  
-        var otherleft = otherobj.x;
-        var otherright = otherobj.x + (otherobj.width);
-        var othertop = otherobj.y;
-        var otherbottom = otherobj.y + (otherobj.height);
-        
-		  if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
-            crash = false;
-        }
-		  // if (myleft >= )
-			  // crash = false;
-		  
-		  else {
+		return (mybottom >= bottom || mytop <= top || myright >= right_side || myleft <= left_side);
+		/*
+			if (mybottom >= bottom) {
+				// this.speedY =  Math.abs(this.speedY) * -1 * vars.bounce;
+				hit = true;
+			}
+			else if (mytop <= top ) {
+				// this.speedY = Math.abs(this.speedY) * vars.bounce;
+				hit = true;
+			}
+			if (myright >= right_side) {
 				// this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
-				// this.speedY = Math.abs(this.speedY) * -1 * vars.bounce;
-				console.log("collision!");
-		  }
-        return crash;
-    }
+				hit = true;
+			}
+			else if (myleft <= left_side ) {
+				// this.speedX = Math.abs(this.speedX) * vars.bounce;
+				hit = true;
+			}
+			return hit;
+		*/
+	}
+	this.crashWith = function(otherobj) {
+		var crash = true;
+		var myleft = this.x;
+		var myright = this.x + (this.width);
+		var mytop = this.y;
+		var mybottom = this.y + (this.height);
+		var otherleft = otherobj.x;
+		var otherright = otherobj.x + (otherobj.width);
+		var othertop = otherobj.y;
+		var otherbottom = otherobj.y + (otherobj.height);
+
+		if ( (mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright) ) {
+			crash = false;
+		}
+		// if (myleft >= )
+			// crash = false;
+
+		else {
+			// this.speedX = Math.abs(this.speedX) * -1 * vars.bounce;
+			// this.speedY = Math.abs(this.speedY) * -1 * vars.bounce;
+			console.log("collision!");
+		}
+		return crash;
+	}
 }
 
 function updateGameArea() {
-	 /*// Check if you hit the side.
-	 if (players_array[players[player.name]].hitSide()) {
-		 console.log("bumped the wall."); // TODO: 
-	 }
-	 */
-	 
-	 // loop thru other players in game to determine collisions
-	 for (i = 0; i < players_array.length; i += 1) {
-		  if ( !(i === player.index) &&
-					players_array[player.index].crashWith(players_array[i]) &&
-					players_array[player.index].has_flag ) 
-		  {
-				console.log("You bumped into "+players_array[i].name);
-				if (players_array[player.index].color == "yellow") // only call if you have the flag
-					send_request("POST", "giveFlag", {'name':players_array[i].name});
-		  } 
-	 }
-	 
-	 // Update Moves 10 times per second
-	 if (myGameArea.frameNo % 5 == 0) {
+	/*
+		// Check if you hit the side.
+		if (players_array[players[player.name]].hitSide()) {
+			console.log("bumped the wall."); // TODO: 
+		}
+	*/
+
+	// loop thru other players in game to determine collisions
+	for (i = 0; i < players_array.length; i += 1) {
+		if ( 
+			!(i === player.index) &&
+			players_array[player.index].crashWith(players_array[i]) &&
+			players_array[player.index].has_flag
+		) {
+			console.log("You bumped into "+players_array[i].name);
+			// only call if you have the flag
+			if (players_array[player.index].color == "yellow") {
+				send_request("POST", "giveFlag", {'name':players_array[i].name});
+			}
+		}
+	}
+
+	// Update Moves 10 times per second
+	if (myGameArea.frameNo % 5 == 0) {
 		var data = {
 			'name': player.name,
 			'x' : players_array[player.index].next_x(),
@@ -276,44 +272,41 @@ function updateGameArea() {
 		};
 		send_request("POST", "move", data);
 		// send_request("GET", "getGameState", null);
-	 }
+	}
+
+	// Get Game State 5 times per second
+	if (myGameArea.frameNo % 10 == 0) {
+		send_request("GET", "getGameState", null);
+	} 
 	 
-	 	 // Get Game State 5 times per second
-	 if (myGameArea.frameNo % 10 == 0) {
-		 send_request("GET", "getGameState", null);
-	 } 
+	myGameArea.clear();
+	myGameArea.frameNo += 1;
 	 
-	 
-    myGameArea.clear();
-    myGameArea.frameNo += 1;
-	 
-	 if ( !(players[player.name] === undefined) ) {
-		 myPosition.text="("+String(players_array[players[player.name]].x)+", "
-								  +String(players_array[players[player.name]].y)+")";
-		 you.x = players_array[player.index].x;
-		 you.y = players_array[player.index].y;
-		 if (players_array[player.index].has_flag)
-			 players_array[player.index].score += 1;
-		 myScore.text="Score: "+ String(players_array[player.index].score);
-		 
-	 }
-	 
-	 you.update();
-	 myScore.update();
-	 myPosition.update();	 
-	 for (i = 0; i < players_array.length; i += 1) {
-		 players_array[i].update();
-	 }
+	if ( !(players[player.name] === undefined) ) {
+		myPosition.text = "(" + String(players_array[players[player.name]].x) + ", " + String(players_array[players[player.name]].y) + ")";
+		you.x = players_array[player.index].x;
+		you.y = players_array[player.index].y;
+		if (players_array[player.index].has_flag) {
+			players_array[player.index].score += 1;
+		}
+		myScore.text = "Score: " + String(players_array[player.index].score);
+	}
+
+	you.update();
+	myScore.update();
+	myPosition.update();	 
+	for (i = 0; i < players_array.length; i += 1) {
+		players_array[i].update();
+	}
 }
 
 function everyinterval(n) {
-    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
-    return false;
+	return ( (myGameArea.frameNo / n) % 1 == 0 );
 }
 
 function accelerate_me(x, y) {
-	 players_array[players[player.name]].speedX += x;
-	 players_array[players[player.name]].speedY += y;
+	players_array[players[player.name]].speedX += x;
+	players_array[players[player.name]].speedY += y;
 }
 
 function getKeyPress(event) {
@@ -323,30 +316,19 @@ function getKeyPress(event) {
 		Explanation of the first line in the function below: if the browser supports event.which, 
 			then use event.which, otherwise use event.keyCode 
 	*/
-    var key = event.which || event.keyCode;
-	 var speed = 0.9;
-	 // Player 1 (wasd)
-	 if (key == 97 /*a - Left */) {
-		 accelerate_me(speed * -1, 0);
-	 }
-	 else if (key == 100 /*d - Right*/) {
-		 accelerate_me(speed, 0);
-	 }
-	 else if (key == 119 /*w - Up */) {
-		 accelerate_me(0, speed * -1);
-	 }
-	 else if (key == 115 /*s - Down*/) {
-		 accelerate_me(0, speed);
-	 }
-	 
+	var key = event.which || event.keyCode;
+	var speed = 0.9;
+	// Player 1 (wasd)
+	if (key == 97 /*a - Left */) {
+		accelerate_me(speed * -1, 0);
+	}
+	else if (key == 100 /*d - Right*/) {
+		accelerate_me(speed, 0);
+	}
+	else if (key == 119 /*w - Up */) {
+		accelerate_me(0, speed * -1);
+	}
+	else if (key == 115 /*s - Down*/) {
+		accelerate_me(0, speed);
+	}
 }
-
-
-
-
-
-
-
-
-
-
