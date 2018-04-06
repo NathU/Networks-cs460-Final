@@ -31,37 +31,37 @@ function send_request(req_type, endpoint, data) {
 			var response = JSON.parse(xhr.responseText);
 			resp_status = response.status;
 			// Player joins the game.
-			if (endpoint === "joinGame"){
+			if (endpoint === "joinGame") {
 				resp_data = response.data[0];
+				// Chosen name not available.
 				if (resp_status === "failure") {
 					console.log("That name is taken. Please pick a different name.");
 					return;
 				}
+				// Creates player.
 				else {
 					player.name = resp_data.name;
 					player.id = resp_data.id;
-					players_array.push(new component(player.name, 30, 30, "red", resp_data.x_pos, resp_data.y_pos));
+					players_array.push( new component( player.name, 30, 30, "red", resp_data.x_pos, resp_data.y_pos ) );
 					players[resp_data.name] = players_array.length - 1;
 					player.index = players[resp_data.name];
-					console.log(player.name + "("+player.id+") has joined the game!");
+					console.log(player.name + "(" + player.id + ") has joined the game!");
 					startGame();
 				}
 			}
 			// Player moves.
-			else if (endpoint === "move" && resp_status === "success"){
-			}
+			else if (endpoint === "move" && resp_status === "success") {}
 			// Player loses the flag.
-			else if (endpoint === "giveFlag" && resp_status === "success"){
-			}
+			else if (endpoint === "giveFlag" && resp_status === "success") {}
 			// Player refreshes the game state.
-			else if (endpoint === "getGameState" && resp_status === "success"){
+			else if (endpoint === "getGameState" && resp_status === "success") {
 				resp_data = response.data;
-				for (i = 0; i < resp_data.length; i += 1) {
+				for (i = 0; i < resp_data.length; i ++) {
 					// catch new players
 					if (players[resp_data[i].name] === undefined) {
-						players_array.push(new component(resp_data[i].name, 30, 30, "blue", resp_data[i].x_pos, resp_data[i].y_pos));
+						players_array.push( new component( resp_data[i].name, 30, 30, "blue", resp_data[i].x_pos, resp_data[i].y_pos ) );
 						players[resp_data[i].name] = players_array.length - 1;
-						console.log(resp_data[i].name + "(i="+players[resp_data[i].name]+") has joined the game!");
+						console.log(resp_data[i].name + "(i=" + players[resp_data[i].name] + ") has joined the game!");
 					}
 					// update existing players
 					else {
@@ -86,8 +86,9 @@ function send_request(req_type, endpoint, data) {
 				}
 			}
 			// Failure.
-			else
+			else {
 				console.log("SEND_REQ: " + endpoint + "  " + JSON.stringify(data) + "FAILED.");
+			}
 		}
 	};
 	if (!data) {
