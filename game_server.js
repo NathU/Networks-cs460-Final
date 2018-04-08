@@ -13,9 +13,13 @@ logger.exitOnError = false;
 
 // allow certain headers
 app.use(function(req, res, next){
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-    next();
+	res.header("Access-Control-Allow-Origin", "*");
+	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, Connection");
+	if ("close" == req.get('Connection')) {
+		logger.info("Closing the Connection for player %d", req.get('Authorization'));
+		endpoints.deletePlayer(req.get('Authorization')); // TODO: put u_id in Auth Header, front & backend
+	}
+	next();
 });
 
 requestBodyHandler = function(contract, req, res, callback) {
@@ -54,24 +58,23 @@ app.post('/move', jsonParser, function (req, res) {
 	// logger.info("hit \'move\'");
 	requestBodyHandler(contracts.move, req, res, 
 		function (req, res) {
-			endpoints.move( req.body, (response) => res.send(response))
+			// endpoints.move( req.body, (response) => res.send(response))
+			endpoints.move( req.body, (response) => logger.verbose("move.response: ", response));
+			res.send({'data':"MOVE: touch-&-go complete.", 'status':"success"});
 		});
 });
 
-// app.post('/collision', jsonParser, function (req, res) {
-	// logger.info("hit \'collision\'");
-	// requestBodyHandler(contracts.collision, req, res, 
-		// function (req, res) {
-			// endpoints.collision( req.body, (response) => res.send(response))
-		// });
-// });
-
 app.get('/getGameState', jsonParser, function (req, res) {
+	// TODO: try to speed this up?
+	endpoints.getGameState( (response) => res.send(response));
+	
 	// logger.info("hit \'getGameState\'");
+	/*
 	requestBodyHandler(contracts.getGameState, req, res, 
 		function (req, res) {
 			endpoints.getGameState( (response) => res.send(response))
 		});
+	*/
 });
 
 app.get('/clearGameState', jsonParser, function (req, res) {
@@ -81,14 +84,15 @@ app.get('/clearGameState', jsonParser, function (req, res) {
 			endpoints.clearGameState( (response) => res.send(response))
 		});
 });
+
 app.post('/giveFlag', jsonParser, function (req, res) {
 	logger.info("hit \'giveFlag\'");
 	requestBodyHandler(contracts.giveFlag, req, res, 
 		function (req, res) {
-			endpoints.giveFlag( req.body, (response) => res.send(response))
+			endpoints.giveFlag( req.body, (response) => logger.info("giveFlag.response: ", response));
+			res.send({'data':"giveFlag: touch-&-go complete.", 'status':"success"});
 		});
 });
-
 
 
 // specify path for our static content

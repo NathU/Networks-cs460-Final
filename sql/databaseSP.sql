@@ -18,21 +18,14 @@ END //
 DELIMITER ;
 
 
--- select '...procedure create - deletePlayer' AS '';
--- DROP PROCEDURE IF EXISTS deletePlayer;
--- DELIMITER //
--- CREATE PROCEDURE deletePlayer(IN player_name VARCHAR(128))
--- BEGIN
-	-- -- TODO: Don't delete. Just set a field like 'status' to dead code.
-	
-	-- IF 1 = (SELECT has_flag FROM game_state WHERE player_name = game_state.name)
-	-- THEN -- assign flag to someone else before killing
-		-- UPDATE game_state SET has_flag = 1
-	-- END IF;
-	
-   -- UPDATE game_state SET is_alive = 0 WHERE player_name = game_state.name;
--- END //
--- DELIMITER ;
+select '...procedure create - deletePlayer' AS '';
+DROP PROCEDURE IF EXISTS deletePlayer;
+DELIMITER //
+CREATE PROCEDURE deletePlayer(IN player_id INT UNSIGNED)
+BEGIN
+	DELETE FROM game_state WHERE game_state.id = player_id;
+END //
+DELIMITER ;
 
 
 select '...procedure create - updatePosition' AS '';

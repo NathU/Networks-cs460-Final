@@ -3,29 +3,42 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"/> -->
-	<title>Title???</title>
+	<title>Lets Play Tag!</title>
 	<script type="text/javascript" src="game_logic.js"></script>
 	<style>
 		canvas {
 			 border:1px solid #d3d3d3;
 			 background-color: #f1f1f1;
 		}
+		td {
+			border: 1px solid black;
+			border-collapse: collapse;
+			text-align:center;
+		}
 	</style>
 </head>  
 <body onkeypress="getKeyPress(event)">
-	<br>
-	<p> Enter your Name: </p>
-	<form>
-		<!-- <input type="radio" name="color" value="red" checked> Red<br> -->
-		<!-- <input type="radio" name="color" value="blue"> Blue<br> -->
-		<!-- <input type="radio" name="color" value="green"> Green -->
-		
-		<input type="text" name="valueId"/>
-		<input type="button" value="join game" onclick="joinGame(this.form.valueId.value)"/>
-	</form>
-	<!-- <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button> -->
+	<table> <tr>
+		<td>
+			Enter your Name and click JOIN
+			<form>	
+				<input type="text" name="valueId"/>
+				<input type="button" value="JOIN" onclick="joinGame(this.form.valueId.value)"/>
+				<!-- <input type="button" value="QUIT" onclick="leaveGame()"/> -->
+			</form>
+		</td>
+		<td>
+			Scoreboard (golf rules)
+			<table id="scoreboard">
+				<tr id="temp_row">
+					
+				</tr>
+			</table>
+		</td>
+	</tr> </table>
 	
+	<!-- <button onmousedown="accelerate(-0.2)" onmouseup="accelerate(0.05)">ACCELERATE</button> -->
 	<!-- <input type="text" size="40" onkeypress="getKeyPress(event)"> -->
-	<!-- <p id="demo"></p> -->
+	<!-- <button onclick="myFunction()">Try it</button> -->
 </body>
 </html>
