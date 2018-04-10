@@ -15,10 +15,10 @@ logger.exitOnError = false;
 app.use(function(req, res, next){
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization, Connection");
-	if ("close" == req.get('Connection')) {
-		logger.info("Closing the Connection for player %d", req.get('Authorization'));
-		endpoints.deletePlayer(req.get('Authorization')); // TODO: put u_id in Auth Header, front & backend
-	}
+	// logger.info("Connection for %d - %s", req.get('Authorization'), req.get('Connection'));
+	// if ("close" == req.get('Connection')) {
+		// endpoints.deletePlayer(req.get('Authorization')); // TODO: put u_id in Auth Header, front & backend
+	// }
 	next();
 });
 
@@ -55,6 +55,7 @@ app.post('/joinGame', jsonParser, function (req, res) {
 });
 
 app.post('/move', jsonParser, function (req, res) {
+	logger.info("Connection for %d - %s", req.get('Authorization'), req.get('Connection'));
 	// logger.info("hit \'move\'");
 	requestBodyHandler(contracts.move, req, res, 
 		function (req, res) {
@@ -101,6 +102,7 @@ app.use(express.static(path.join(__dirname, env.path_to_dist)));
 // endpoint for static stuff.
 app.get('*', (req, res) => {
 	logger.info("hit \'%s\'", req.originalUrl);
+	logger.info("Connection for %d - %s", req.get('Authorization'), req.get('Connection'));
 	res.sendFile(path.join(__dirname, env.path_to_dist+'/index.html'));
 });
 

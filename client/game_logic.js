@@ -1,7 +1,7 @@
 var vars = {
 	'speed' : 2.0,
 	'friction' : 0.95, // a multiplier on speedX & speedY. must be < 1
-	'url' : "http://10.200.34.231:3001/",//"http://localhost:3001/",//"https://www.joyfulnetworking.com/",//
+	'url' : "http://localhost:3001/",
 	'game_width' : 1000,
 	'game_height' : 540,
 	'refresh_interval' : 20, //(1000 / 50) /* 50 FPS */
@@ -269,7 +269,7 @@ function component(name, width, height, color, x, y, type) {
 function updateGameArea() {	 
 	players_array[player.index].speedX *= vars.friction;
 	players_array[player.index].speedY *= vars.friction;
-	if (myGameArea.frameNo % 25 == 0) {
+	if (myGameArea.frameNo % 12.5 == 0) {
 		// check for flag hand-offs. Only check when you're carrying the flag.
 		// use our local version of has_flag so you don't call "giveFlag" multiple times.
 		// in other words, update game state, and assume you don't have the flag until you get the new game state.
