@@ -101,8 +101,8 @@ app.use(express.static(path.join(__dirname, env.path_to_dist)));
 
 // endpoint for static stuff.
 app.get('*', (req, res) => {
-	logger.info("hit \'%s\'", req.originalUrl);
-	logger.info("Connection for %d - %s", req.get('Authorization'), req.get('Connection'));
+	// logger.info("hit \'%s\'", req.originalUrl);
+	// logger.info("Connection for %d - %s", req.get('Authorization'), req.get('Connection'));
 	res.sendFile(path.join(__dirname, env.path_to_dist+'/index.html'));
 });
 
